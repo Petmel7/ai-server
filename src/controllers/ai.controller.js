@@ -1,4 +1,4 @@
-import { generateChat, summarizeText, classifyText } from "../services/ai.service.js";
+import { generateChat, summarizeText, classifyText, analyzeImage } from "../services/ai.service.js";
 
 export async function chat(req, res) {
     const { message } = req.body;
@@ -38,3 +38,19 @@ export async function classify(req, res, next) {
     }
 }
 
+export async function vision(req, res, next) {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: "Image file is required" });
+        }
+
+        const result = await analyzeImage({
+            buffer: req.file.buffer,
+            mimeType: req.file.mimetype,
+        });
+
+        res.json(result);
+    } catch (err) {
+        next(err);
+    }
+}
