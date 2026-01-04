@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { classify } from "../api/ai";
+import { inputClass, buttonClass } from "../styles/ui";
 
 export default function ClassifyTab() {
     const [text, setText] = useState("");
@@ -15,24 +16,35 @@ export default function ClassifyTab() {
     };
 
     return (
-        <div>
-            <h2>Classify</h2>
+        <div className="bg-white p-6 rounded-xl shadow">
+            <h2 className="text-xl font-semibold mb-4">Classify</h2>
 
             <input
+                className={`${inputClass} mb-2`}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder="Text to classify"
             />
 
             <input
+                className={inputClass}
                 value={labels}
                 onChange={(e) => setLabels(e.target.value)}
                 placeholder="labels,comma,separated"
             />
 
-            <button onClick={handleClassify}>Classify</button>
+            <button
+                className={`${buttonClass} mt-3`}
+                onClick={handleClassify}>
+                Classify
+            </button>
 
-            {result && <p>Result: <b>{result}</b></p>}
+            {result && (
+                <div className="mt-4 text-lg">
+                    Result:
+                    <span className="ml-2 font-bold text-blue-600">{result}</span>
+                </div>
+            )}
         </div>
     );
 }

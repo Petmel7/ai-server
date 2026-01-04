@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { summarize } from "../api/ai";
+import { inputClass, buttonClass } from "../styles/ui";
 
 export default function SummarizeTab() {
     const [text, setText] = useState("");
@@ -11,19 +12,27 @@ export default function SummarizeTab() {
     };
 
     return (
-        <div>
-            <h2>Summarize</h2>
+        <div className="bg-white p-6 rounded-xl shadow">
+            <h2 className="text-xl font-semibold mb-4">Summarize</h2>
 
             <textarea
                 rows={6}
+                className={inputClass}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder="Paste long text here..."
             />
 
-            <button onClick={handleSummarize}>Summarize</button>
+            <button
+                className={`${buttonClass} mt-3`}
+                onClick={handleSummarize}>
+                Summarize
+            </button>
 
-            {result && <pre>{result}</pre>}
+            {result &&
+                <pre className="mt-4 p-4 bg-gray-50 rounded-lg text-sm">
+                    {result}
+                </pre>}
         </div>
     );
 }
