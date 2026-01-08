@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
 
+import "./config/redis.js";
+
 import aiRoutes from "./routes/ai.routes.js";
 import { errorMiddleware } from "./middleware/error.middleware.js";
 

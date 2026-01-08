@@ -4,7 +4,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon --exec node --env-file=.env server.js"
+    "dev": "nodemon --exec node --env-file=.env server.js",
+    "test": "vitest"
   },
   "keywords": [],
   "author": "",
@@ -14,8 +15,14 @@
     "@google/genai": "^1.33.0",
     "cors": "^2.8.5",
     "express": "^5.2.1",
+    "ioredis": "^5.9.0",
     "multer": "^2.0.2",
     "nodemon": "^3.1.11",
-    "openai": "^6.10.0"
+    "openai": "^6.10.0",
+    "uuid": "^13.0.0",
+    "ws": "^8.19.0"
+  },
+  "devDependencies": {
+    "vitest": "^4.0.16"
   }
 }
