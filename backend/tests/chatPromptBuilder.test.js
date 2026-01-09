@@ -1,22 +1,32 @@
+import { describe, it, expect } from "vitest";
+import { buildChatPrompt } from "../src/prompts/promptBuilder.js";
 
-// import { describe, test, expect } from "vitest";
-// import { buildChatPrompt } from "../src/prompts/promptBuilder.js";
+describe("buildChatPrompt", () => {
+    it("includes system, summary and recent messages", () => {
+        const contents = buildChatPrompt({
+            systemPrompt: "You are helpful",
+            summary: "User wants fitness plans",
+            messages: [
+                { role: "user", content: "Hi" },
+                { role: "assistant", content: "Hello" },
+                { role: "user", content: "Plan workout" },
+            ],
+        });
 
-// describe("buildChatPrompt", () => {
-//     test("builds valid Gemini contents", () => {
-//         const contents = buildChatPrompt({
-//             role: "default",
-//             userMessage: "Hello",
-//         });
+        expect(contents.length).toBeGreaterThan(0);
 
-//         expect(Array.isArray(contents)).toBe(true);
-//         expect(contents.length).toBeGreaterThan(0);
+        expect(contents[0].parts[0].text).toContain("You are helpful");
+        expect(contents[1].parts[0].text).toContain("Conversation summary");
+        expect(contents.at(-1).parts[0].text).toBe("Plan workout");
+    });
 
-//         for (const msg of contents) {
-//             expect(msg).toHaveProperty("role");
-//             expect(["user", "model"]).toContain(msg.role);
-//             expect(msg.parts?.[0]?.text).toBeTruthy();
-//         }
-//     });
-// });
+    it("maps assistant role to model", () => {
+        const contents = buildChatPrompt({
+            messages: [{ role: "assistant", content: "Answer" }],
+        });
+
+        expect(contents[0].role).toBe("model");
+    });
+});
+
 

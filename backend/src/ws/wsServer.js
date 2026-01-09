@@ -3,6 +3,8 @@ import crypto from "crypto";
 import { redis } from "../config/redis.js";
 import { handleMessage } from "./wsHandlers.js";
 
+const SESSION_TTL = 60 * 60; // 1 hour
+
 export function initWebSocketServer(httpServer) {
     const wss = new WebSocketServer({
         server: httpServer,
@@ -10,48 +12,55 @@ export function initWebSocketServer(httpServer) {
     });
 
     wss.on("connection", async (ws, req) => {
-        console.log("🔌 WS connected");
+        try {
+            const url = new URL(req.url, "http://localhost");
+            let sessionId = url.searchParams.get("sessionId");
 
-        const url = new URL(req.url, "http://localhost");
-        const sessionId = url.searchParams.get("sessionId");
+            if (!sessionId) {
+                sessionId = crypto.randomUUID();
+            }
 
-        let conversationId = null;
+            let conversationId = await redis.get(`ws:session:${sessionId}`);
 
-        if (sessionId) {
-            conversationId = await redis.get(`ws:session:${sessionId}`);
-        }
+            if (!conversationId) {
+                conversationId = crypto.randomUUID();
 
-        if (!conversationId) {
-            conversationId = crypto.randomUUID();
-            if (sessionId) {
                 await redis.set(
                     `ws:session:${sessionId}`,
-                    conversationId
+                    conversationId,
+                    "EX",
+                    SESSION_TTL
                 );
             }
+
+            ws.sessionId = sessionId;
+            ws.conversationId = conversationId;
+
+            console.log("🔌 WS connected");
+            console.log("🧠 sessionId:", sessionId);
+            console.log("🧠 conversationId:", conversationId);
+
+            ws.send(JSON.stringify({
+                type: "ready",
+                sessionId,
+                conversationId,
+            }));
+
+            ws.on("message", raw => {
+                handleMessage(ws, raw);
+            });
+
+            ws.on("close", () => {
+                console.log("❌ WS disconnected", sessionId);
+            });
+
+        } catch (err) {
+            console.error("WS connection error:", err);
+            ws.close();
         }
-
-        ws.conversationId = conversationId;
-
-        console.log("🧠 conversationId:", conversationId);
-
-        ws.on("message", async raw => {
-            try {
-                const data = JSON.parse(raw.toString());
-                await handleMessage(ws, data);
-            } catch (err) {
-                ws.send(JSON.stringify({
-                    type: "error",
-                    message: err.message,
-                }));
-            }
-        });
-
-        ws.on("close", () => {
-            console.log("❌ WS disconnected");
-        });
     });
 
     console.log("⚡ WebSocket server ready on /ws");
 }
+
 

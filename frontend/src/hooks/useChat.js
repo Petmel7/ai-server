@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useChatSocket } from "./useChatSocket";
 
 const STORAGE_KEY = "ai-chat-history";
-const MAX_MESSAGES = 20;
+const SEND_DELAY = 400;
 
 export function useChat() {
     const [messages, setMessages] = useState(() => {
@@ -13,7 +13,9 @@ export function useChat() {
     });
 
     const [loading, setLoading] = useState(false);
-    const bottomRef = useRef(null);
+
+    const bottomRef = useRef(null);          // ✅ DOM
+    const sendTimeoutRef = useRef(null);     // ✅ debounce
 
     /* ---------- WS ---------- */
     const { send } = useChatSocket({
@@ -48,18 +50,22 @@ export function useChat() {
     const sendMessage = input => {
         if (!input.trim() || loading) return;
 
-        setMessages(prev => [
-            ...prev,
-            { role: "user", content: input },
-            { role: "assistant", content: "" },
-        ]);
+        clearTimeout(sendTimeoutRef.current);
 
-        setLoading(true);
+        sendTimeoutRef.current = setTimeout(() => {
+            setMessages(prev => [
+                ...prev,
+                { role: "user", content: input },
+                { role: "assistant", content: "" },
+            ]);
 
-        send({
-            type: "chat",
-            message: input,
-        });
+            setLoading(true);
+
+            send({
+                type: "chat",
+                message: input,
+            });
+        }, SEND_DELAY);
     };
 
     /* ---------- CLEAR ---------- */
@@ -77,4 +83,3 @@ export function useChat() {
         bottomRef,
     };
 }
-

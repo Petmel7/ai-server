@@ -11,7 +11,6 @@ export async function autoSummarizeConversation(conversationId) {
     if (messages.length < SUMMARY_MESSAGE_COUNT) return null;
 
     const previousSummary = await getSummary(conversationId);
-
     const recentMessages = messages.slice(-SUMMARY_MESSAGE_COUNT);
 
     const contents = buildSummaryPrompt({
@@ -25,7 +24,7 @@ export async function autoSummarizeConversation(conversationId) {
         maxOutputTokens: 200,
     });
 
-    await setSummary(conversationId, summary);
+    await setSummary(conversationId, summary); // 👈 ТУТ
 
     return summary;
 }
